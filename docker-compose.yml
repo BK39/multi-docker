@@ -1,0 +1,78 @@
+version: '3'
+services:
+    #NGINX service - Router/Proxy
+    nginx-svc:
+        restart: always
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./nginx           # specify the path to the dockerfile
+        ports:
+            - '8080:80'  # host port 8080 to container port 80
+        depends_on: 
+            - api-svc
+            - client-svc
+
+    # Download Postgres image from hub.docker.com
+    postgres-svc:
+        image: 'postgres:latest'
+        environment: 
+            - POSTGRES_PASSWORD=postgres_password   #default
+    
+    # Download Redis image from hub.docker.com
+    redis-svc:
+        image: 'redis:latest'   
+    
+    # Express Server Service definition
+    api-svc:
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./server           # specify the path to the dockerfile
+        
+        # Set Volume to map the filesystem to the container
+        volumes: 
+            - /app/node_modules         # do not map this folder
+            - ./server:/app             # /app WORKDIR in docker file
+
+        # Set environment variables as defined in the server:keys.js
+        environment: 
+            - REDIS_HOST=redis-svc
+            - REDIS_PORT=6379                   #default
+            - PGHOST=postgres-svc
+            - PGPORT=5432                       #default
+            - PGDATABASE=postgres
+            - PGUSER=postgres                   #default userid
+            - PGPASSWORD=postgres_password      #default password
+    
+        depends_on: 
+            - postgres-svc
+
+    # React Server - Client Service
+    client-svc:
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./client           # specify the path to the dockerfile
+        
+        # Set Volume to map the filesystem to the container
+        volumes: 
+            - /app/node_modules         # do not map this folder
+            - ./client:/app             # /app WORKDIR in docker file
+
+        # address bug in Read app causing it to exit when starting with Docker Compose
+        stdin_open: true
+
+    #Worker Service
+    worker-svc:
+        build:
+            dockerfile: Dockerfile.dev
+            context: ./worker           # specify the path to the dockerfile
+        
+        # Set Volume to map the filesystem to the container
+        volumes: 
+            - /app/node_modules         # do not map this folder
+            - ./worker:/app             # /app WORKDIR in docker file
+        
+        # Set environment variables as defined in the server:keys.js
+        environment: 
+            - REDIS_HOST=redis-svc
+            - REDIS_PORT=6379                   #default
+            
