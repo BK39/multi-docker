@@ -8,24 +8,24 @@ services:
 # tests are run only on the Development version and not Production
 # only testing Client in this case, other modules can be added as needed
 before_install:
-    - docker build -t BK39/multidocker-clienttest -f ./client/Dockerfile.dev ./client
+    - docker build -t bk39/multidocker-clienttest -f ./client/Dockerfile.dev ./client
 
 # Execute the test scripts
 script:
-    - docker run -e CI=true BK39/multidocker-clienttest npm test
+    - docker run -e CI=true bk39/multidocker-clienttest npm test
 
 # Test successfull, build the production version of the docker images
 after_success:
-    - docker build -t BK39/multidocker-nginx ./nginx
-    - docker build -t BK39/multidocker-client ./client
-    - docker build -t BK39/multidocker-server ./server
-    - docker build -t BK39/multidocker-worker ./worker
+    - docker build -t bk39/multidocker-nginx ./nginx
+    - docker build -t bk39/multidocker-client ./client
+    - docker build -t bk39/multidocker-server ./server
+    - docker build -t bk39/multidocker-worker ./worker
 
     # Log in to the DockerHub using CLI
     - echo "@DOCKER_PASSWORD" | docker login -u "@DOCKER_ID" --password-stdin
     
     # Take the images and push them to docker hub
-    - docker push BK39/multidocker-nginx
-    - docker push BK39/multidocker-client
-    - docker push BK39/multidocker-server
-    - docker push BK39/multidocker-worker
+    - docker push bk39/multidocker-nginx
+    - docker push bk39/multidocker-client
+    - docker push bk39/multidocker-server
+    - docker push bk39/multidocker-worker
