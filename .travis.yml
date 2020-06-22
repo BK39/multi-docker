@@ -22,7 +22,7 @@ after_success:
     - docker build -t bk39/multidocker-worker ./worker
 
     # Log in to the DockerHub using CLI
-    - echo "@DOCKER_PASSWORD" | docker login -u "@DOCKER_ID" --password-stdin
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
     
     # Take the images and push them to docker hub
     - docker push bk39/multidocker-nginx
